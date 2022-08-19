@@ -1,6 +1,9 @@
+import { load } from 'cheerio';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-import { Client } from '../../youtubei';
+import { validLyric } from '../utils/validLyric';
+
+const data: Record<string, string[]> = {};
 
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   const { artist, track } = req.query;
@@ -12,13 +15,61 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
-  const client = new Client();
-  const result = await client.search(`${artist} - ${track}`);
+  const key = `${artist}-${track}`;
 
-  console.log(result.items[0]);
+  if (data[key]) {
+    return {
+      success: true,
+      data: data[key]
+    };
+  }
+
+  let lyrics: string[] | undefined;
+  let index = -1;
+  let artists = artist;
+
+  do {
+    console.log('Fetching', track, 'by', artists);
+
+    lyrics = await fetchLyrics(artists, track);
+    index = artists.lastIndexOf('-and-');
+    artists = artists.substr(0, index);
+  } while (!lyrics && index !== -1)
+
+  if (!lyrics) {
+    return res.json({
+      success: false,
+      message: 'Unable to parse song'
+    });
+  }
+
+  data[key] = lyrics;
 
   res.json({
     success: true,
-    data: ['lyric']
+    data: lyrics
   });
+}
+
+async function fetchLyrics(artist: string, track: string) {
+  const response = await fetch(`https://genius.com/${artist}-${track}-lyrics`);
+
+  if (!response.ok) {
+    return;
+  }
+
+  const html = await response.text();
+
+  const $ = load(html);
+  const lyrics = $('.Lyrics__Root-sc-1ynbvzw-0 *, div[initial-content-for="lyrics"] *, div[data-lyrics-container="true"] *')
+    .contents()
+    .map((i, element) => element.type === 'text' ? $(element).text().trim() : '')
+    .get()
+    .filter(validLyric as any);
+
+  if (!lyrics.length) {
+    return;
+  }
+
+  return lyrics as any as string[];
 }
