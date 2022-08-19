@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
+import { Client } from '../../youtubei';
+
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   const { artist, track } = req.query;
 
@@ -9,6 +11,11 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       message: 'Invalid parameters'
     });
   }
+
+  const client = new Client();
+  const result = await client.search(`${artist} - ${track}`);
+
+  console.log(result.items[0]);
 
   res.json({
     success: true,
