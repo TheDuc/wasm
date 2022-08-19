@@ -1,5 +1,5 @@
 {
-  "name": "lyra",
+  "name": "lyrik",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

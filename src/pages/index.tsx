@@ -13,7 +13,7 @@ import { useFetch } from '../hooks/useFetch';
 import { PlaylistsResponse } from '../types';
 import { buildUrl } from '../utils/buildUrl';
 
-export default function Lyra() {
+export default function Lyrik() {
   const skip = useAuthGuard();
   const [, playlists] = useFetch<PlaylistsResponse>(buildUrl('https://api.spotify.com/v1/me/playlists', { limit: '50' }), skip);
   const { push } = useRouter();

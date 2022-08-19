@@ -11,7 +11,7 @@ export default function App({ Component }: AppProps) {
   return (
     <>
       <Head>
-        <title>Lyra / Guess your songs</title>
+        <title>Lyrik / Guess your songs</title>
       </Head>
       <DialoogProvider>
         <AuthenticationProvider>
